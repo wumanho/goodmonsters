@@ -1,52 +1,44 @@
-import {Component} from 'react'
 import './App.css';
+import {useState, useEffect} from "react";
 import CardList from "./components/card-list/card-list-component";
 import SearchBox from "./components/search-box/search-box-component";
 
-class App extends Component {
-  constructor() {
-    super()
-    this.state = {
-      monsters: [],
-      searchField: ''
-    }
-  }
+const App = () => {
+  const [searchField, setSearchField] = useState('a')
+  const [monsters, setMonsters] = useState([])
+  const [displayList, setDisplayList] = useState(monsters)
 
-  componentDidMount() {
+  const onMounted = () => {
     fetch('https://jsonplaceholder.typicode.com/users')
       .then(res => res.json())
-      .then(resJson => {
-        this.setState(() => {
-          return {monsters: resJson}
-        })
-      })
+      .then(resJson => setMonsters(resJson))
   }
+  useEffect(onMounted, [])
 
-  onSearchChange = (e) => {
-    this.setState(() => {
-      return {searchField: e.target.value.toLowerCase()}
-    })
-  }
-
-  render() {
-    const {monsters, searchField} = this.state
-    const {onSearchChange} = this
-
-    const displayList = monsters.filter(m => {
+  useEffect(() => {
+    const list = monsters.filter(m => {
       const lower = m.name.toLowerCase()
       return lower.includes(searchField)
     })
+    setDisplayList(list)
+  }, [monsters, searchField])
 
-    return (
-      <div className="App">
-        <h1 className='app-title'>Good Monsters</h1>
-        <SearchBox
-          onChangeHandler={onSearchChange} placeholder={'search by word'}
-          className='monsters-search-box'
-        />
-        <CardList data={displayList}/>
-      </div>)
+  const onSearchChange = (e) => {
+    const searchStr = e.target.value.toLowerCase()
+    setSearchField(searchStr)
   }
+
+
+  return (
+    <div className="App">
+      <h1 className='app-title'>Good Monsters</h1>
+      <SearchBox
+        onChangeHandler={onSearchChange} placeholder={'search by word'}
+        className='monsters-search-box'
+      />
+      <CardList data={displayList}/>
+    </div>
+  )
 }
 
 export default App;
